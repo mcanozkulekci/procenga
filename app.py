@@ -1,12 +1,10 @@
 from flask import Flask, render_template, request,flash,redirect,url_for,session,logging
 from wtforms import Form,StringField,TextAreaField,PasswordField,validators,ValidationError
 from passlib.hash import sha256_crypt
-from functools import wraps
-from keras.models import model_from_json
-from sklearn.preprocessing import MinMaxScaler
-import pandas as pd
 import os, coin_data, pickle, sys
 from flask_mysqldb import MySQL
+import train_model
+from train_model import loading_model_weights
 
 
 
@@ -44,26 +42,6 @@ class LoginForm(Form):
     password = PasswordField("Password")
 
 
-#Model and Weights Loading
-sc = MinMaxScaler()
-json_file = open('model_1h.json', 'r')
-loaded_model_json = json_file.read()
-json_file.close()
-loaded_model = model_from_json(loaded_model_json)
-loaded_model.load_weights("model_1h.h5")
-print("Loaded model from disk")
-
-
-def model_compiling(loaded_model):
-    loaded_model.compile(optimizer="adam", loss="mse")
-    return loaded_model
-
-
-#Dataframe Manuplation for unnecessary parts.
-new_df = pd.read_csv('Binance_BTCUSDT_1h.csv')
-df = new_df.drop(['unix', 'date', 'symbol', 'open', 'high', 'low', 'Volume BTC', 'Volume USDT', 'tradecount'], axis=1)
-#Fitting the model
-df = sc.fit_transform(df)
 
 
 @app.route('/')
@@ -174,9 +152,9 @@ def logout():
 #Predictions Page. Importing pre-trained model and current prices
 @app.route('/predictions')
 def results():
-    model = model_compiling(loaded_model)
+    model = train_model.model_compiling(train_model.loaded_model)
     price = float(coin_data.current_btc_usd_price())
-    scaled_price = sc.transform([[price]])
+    scaled_price = train_model.sc.transform([[price]])
     predicted_price = float(model.predict(scaled_price))
     if predicted_price > price:
         advice = "BUY"
