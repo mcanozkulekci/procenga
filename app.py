@@ -10,9 +10,6 @@ from flask_mysqldb import MySQL
 
 
 
-
-
-
 app = Flask('crypto_predictor')
 
 #Secret Key is used for using Flash Messages
@@ -39,6 +36,8 @@ class RegisterForm(Form):
         validators.EqualTo('confirm', message='Passwords must match')
     ])
     confirm = PasswordField('Repeat Password')
+    
+
     
 class LoginForm(Form):
     username = StringField("Username")
@@ -176,7 +175,7 @@ def logout():
 @app.route('/predictions')
 def results():
     model = model_compiling(loaded_model)
-    price = float(coin_data.BTC_info0())
+    price = float(coin_data.current_btc_usd_price())
     scaled_price = sc.transform([[price]])
     predicted_price = float(model.predict(scaled_price))
     if predicted_price > price:
@@ -186,6 +185,7 @@ def results():
         advice = "SELL"
         statement = 0
     return render_template('predictions.html', price=price, predicted_price=predicted_price,advice=advice,statement=statement)
-       
 
-app.run("localhost", "9999", debug=True)
+
+if __name__ == '__main__':
+    app.run(debug=False, host='localhost')

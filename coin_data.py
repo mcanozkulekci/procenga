@@ -43,3 +43,10 @@ def XRP():
     time = response_json['data']['ticker']['timestamp']
     current_time = datetime.fromtimestamp(float(time)).strftime("%H:%M:%S")
     return price_XRP, volume24h_XRP, change_24h_XRP, current_time
+
+
+def current_btc_usd_price():
+    response = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT")
+    response_json = response.json()
+    price_BTC = response_json['price']
+    return price_BTC
