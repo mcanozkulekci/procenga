@@ -166,4 +166,4 @@ def results():
 
 
 if __name__ == '__main__':
-    app.run(debug=False, host='localhost')
+    app.run(debug=False, host='localhost', port=3000)
